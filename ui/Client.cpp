@@ -9,7 +9,7 @@
 Client::Client(IPCType_t type) :
     mActive(false)
 {
-    IIPCClient::onDataReceived callback = std::bind
+    IIPCClient::HandleResponseCallback callback = std::bind
             (&Client::onDataReceived, this, std::placeholders::_1);
     mIpc.reset(createIPCClientFactory(type, callback));
 }
@@ -45,7 +45,7 @@ bool Client::disconnect()
 
 bool Client::sendRequest(BaseRequestPtr request)
 {
-    if (request) {
+    if (request && mIpc) {
         ByteArray bytes = Serializer::serialize(request.get());
         int rc = mIpc->writeToServer(bytes);
         if (rc > 0) {

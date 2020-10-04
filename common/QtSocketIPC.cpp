@@ -5,12 +5,14 @@
 
 std::atomic<ClientId_t> QtSocketIpcServer::sNextClientId { 0 };
 
-QtSocketIpcServer::QtSocketIpcServer(IIPCServer::onDataReceived cb, QObject *parent) :
+QtSocketIpcServer::QtSocketIpcServer(IIPCServer::HandleRequestCallback cb, QObject *parent) :
     QObject(parent), IIPCServer(cb)
 {}
 
 QtSocketIpcServer::~QtSocketIpcServer()
-{}
+{
+    unregisterService();
+}
 
 bool QtSocketIpcServer::registerService(ServiceDescriptor service)
 {
@@ -34,24 +36,11 @@ bool QtSocketIpcServer::registerService(ServiceDescriptor service)
     return true;
 }
 
-bool QtSocketIpcServer::unregisterService()
+void QtSocketIpcServer::unregisterService()
 {
-    mServer->close();
-    return true;
-}
-
-int QtSocketIpcServer::writeToClient(ClientId_t clientId, const ByteArray buffer)
-{
-    const auto conn = mConnections.find(clientId);
-    if (conn == mConnections.end()) {
-        LOG_ERR << "There is no client with id=" << clientId << std::endl;
-        return -1;
+    if (mServer) {
+        mServer->close();
     }
-
-    const auto ret =  conn->second->write(buffer.data());
-    if (ret < 0) LOG_ERR << "Sending data to the client=" << clientId << " failed" << std::endl;
-
-    return ret;
 }
 
 void QtSocketIpcServer::handleNewClientConnection()
@@ -74,9 +63,7 @@ void QtSocketIpcServer::handleNewClientRequest()
         LOG_ERR << "Callback is not set" << std::endl;
     }
 
-    ByteArray bytes;
-    bytes.reserve(data.length());
-    memcpy(bytes.data(), data.data(), data.length());
+    ByteArray bytes(data.begin(), data.end());
 
     int clientId = findClientByConnection(clientSocket);
     if (clientId == 0) {
@@ -84,7 +71,16 @@ void QtSocketIpcServer::handleNewClientRequest()
         return;
     }
 
-    mCallback(clientId, bytes);
+    const auto responseBytes = mCallback(clientId, bytes);
+    int bytesWritten = clientSocket->write(responseBytes.data(), responseBytes.size());
+    if (bytesWritten == -1) {
+        LOG_ERR << "Write to socket failed: "
+                << clientSocket->errorString().toStdString() << std::endl;
+    } else {
+        LOG_INFO << "Bytes written to client " << bytesWritten << std::endl;
+    }
+
+    return;
 }
 
 ClientId_t QtSocketIpcServer::findClientByConnection(QTcpSocket *socket) const
@@ -98,7 +94,7 @@ ClientId_t QtSocketIpcServer::findClientByConnection(QTcpSocket *socket) const
     return 0;
 }
 
-QtSocketIpcClient::QtSocketIpcClient(onDataReceived cb, QObject *parent) :
+QtSocketIpcClient::QtSocketIpcClient(HandleResponseCallback cb, QObject *parent) :
     QObject(parent), IIPCClient(cb)
 {}
 
@@ -107,7 +103,7 @@ QtSocketIpcClient::~QtSocketIpcClient()
 
 bool QtSocketIpcClient::connectToService(ServiceDescriptor service)
 {
-    mSocket.reset(new QTcpSocket(this));
+    mSocket.reset(new QTcpSocket());
 
     if (!mSocket) {
         LOG_ERR << "Unable to create client socket" << std::endl;
@@ -122,20 +118,15 @@ bool QtSocketIpcClient::connectToService(ServiceDescriptor service)
                  << " port=" << service.servicePort << std::endl;
     } );
 
+    connect(mSocket.get(), &QTcpSocket::disconnected, mSocket.get(), &QObject::deleteLater);
     connect(mSocket.get(), &QTcpSocket::readyRead, this, [=]()
     {
         QTcpSocket *socket = static_cast<QTcpSocket*>(sender());
         if (socket) {
-            socket->readAll();
+            QByteArray data = socket->readAll();
+            ByteArray bytes(data.begin(), data.end());
+            mCallback(bytes);
         }
-
-        QByteArray data = socket->readAll();
-
-        ByteArray bytes;
-        bytes.reserve(data.length());
-        memcpy(bytes.data(), data.data(), data.length());
-
-        mCallback(bytes);
     } );
 
     connect(mSocket.get(), &QTcpSocket::errorOccurred, this, [=](QAbstractSocket::SocketError err)
@@ -167,14 +158,16 @@ bool QtSocketIpcClient::disconnectFromService()
     return false;
 }
 
-int QtSocketIpcClient::writeToServer(const ByteArray buffer)
+int QtSocketIpcClient::writeToServer(const ByteArray& buffer)
 {
     if (mSocket) {
-        int rc = mSocket->write(buffer.data());
-        if (rc > 0) {
-            LOG_INFO << "Bytes written=" << rc;
+        int rc = mSocket->write(buffer.data(), buffer.size());
+        if (rc == -1) {
+            LOG_ERR << "Write to socket error " << mSocket->errorString().toStdString() << std::endl;
+            return -1;
         }
 
+        LOG_INFO << "Bytes written=" << rc << std::endl;
         return rc;
     }
 

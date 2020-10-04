@@ -3,6 +3,8 @@
 #define LOG_TAG "Serializer"
 #include "Logger.h"
 
+#include <sstream>
+
 /*  Header - total 3 bytes:
  *      1 byte - Request / Response
  *      2 byte - Type
@@ -44,13 +46,16 @@ BaseMessage* Serializer::deserialize(const ByteArray &bytes)
     switch (type) {
         case HASH: {
             if (isRequest) {
-                HashAlgorithm_t type = static_cast<HashAlgorithm_t>( bytes.at(sHeaderSize) );
+                HashAlgorithm_t alg = static_cast<HashAlgorithm_t>( bytes.at(sHeaderSize) );
                 return new HashRequest(
-                            type,
-                            std::string((bytes.data() + sHeaderSize + 1),
-                            totaPayloadSize - 1));
+                            alg,
+                            std::string((bytes.data() + sHeaderSize + 1), totaPayloadSize - 1));
             } else {
-
+                std::ostringstream s;
+                for (int i = sHeaderSize; i < static_cast<int>(bytes.size()); ++i) {
+                    s << std::hex << static_cast<int>(bytes[i]);
+                }
+                return new HashResponse(s.str());
             }
 
             break;

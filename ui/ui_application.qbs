@@ -14,10 +14,10 @@ CppApplication {
     cpp.defines: []
 
     files: [
-        "Contoller.cpp",
         "Client.h",
         "Client.cpp",
-        "Contoller.h",
+        "Controller.cpp",
+        "Controller.h",
         "main.cpp",
         "main.qml",
         "qml.qrc",

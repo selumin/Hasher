@@ -1,6 +1,6 @@
 import qbs
 
-DynamicLibrary {
+StaticLibrary {
     name: "hasher-common"
 
     Depends { name: "cpp" }
@@ -28,11 +28,5 @@ DynamicLibrary {
         Depends { name: "cpp" }
         cpp.includePaths: [product.sourceDirectory]
    }
-
-    Group {
-        fileTagsFilter: "application"
-        qbs.install: true
-        qbs.installDir: "bin"
-    }
 }
 

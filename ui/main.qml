@@ -38,6 +38,8 @@ Window {
 
             placeholderText: qsTr("Your text here")
 
+            text: controller.originalText
+
             background: Rectangle {
                    implicitWidth: 200
                    implicitHeight: 40
@@ -56,10 +58,21 @@ Window {
             columns: 2
             rows: 2
 
-            AlgorithRadioButton { id: md5;    text: "MD5" }
-            AlgorithRadioButton { id: sha256; text: "SHA-256" }
-            AlgorithRadioButton { id: sha384; text: "SHA-384" }
-            AlgorithRadioButton { id: sha512; text: "SHA-512" }
+            ButtonGroup {
+                id: algorithmsGroup
+
+                onCheckedButtonChanged: {
+                    if (md5.checked) controller.algorithmType = 0;
+                    if (sha256.checked) controller.algorithmType = 1;
+                    if (sha384.checked) controller.algorithmType = 2;
+                    if (sha512.checked) controller.algorithmType = 3;
+                }
+            }
+
+            AlgorithRadioButton { id: md5;    text: "MD5";     ButtonGroup.group: algorithmsGroup }
+            AlgorithRadioButton { id: sha256; text: "SHA-256"; ButtonGroup.group: algorithmsGroup }
+            AlgorithRadioButton { id: sha384; text: "SHA-384"; ButtonGroup.group: algorithmsGroup }
+            AlgorithRadioButton { id: sha512; text: "SHA-512"; ButtonGroup.group: algorithmsGroup }
         }
 
         Button {
@@ -76,6 +89,8 @@ Window {
             height: hash.y - actionButton.y - 15
 
             font.pixelSize: 22
+
+            onClicked: controller.doHash(controller.algorithmType, text.text)
         }
 
         TextField {
@@ -102,6 +117,23 @@ Window {
             }
 
             text: controller.hashString
+        }
+
+        Button {
+            id: requestHistoryButton
+
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: hash.bottom
+            anchors.topMargin: 15
+
+            text: "Get history!"
+
+            width: text.x + text.width - actionButton.x
+            height: hash.y - actionButton.y - 15
+
+            font.pixelSize: 22
+
+            onClicked: controller.getHistory()
         }
 
     }

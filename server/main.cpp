@@ -4,6 +4,7 @@
 #define LOG_TAG "MAIN"
 #include "Logger.h"
 
+#include <signal.h>
 #include <unistd.h>
 #include <QCoreApplication>
 

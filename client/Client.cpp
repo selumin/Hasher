@@ -9,7 +9,7 @@
 Client::Client(IPCType_t type) :
     mActive(false)
 {
-    IIPCClient::onDataReceived callback = std::bind
+    IIPCClient::HandleResponseCallback callback = std::bind
             (&Client::onDataReceived, this, std::placeholders::_1);
     mIpc.reset(createIPCClientFactory(type, callback));
 }

@@ -1,11 +1,14 @@
-#ifndef CONTOLLER_H
-#define CONTOLLER_H
+#ifndef CONTROLLER_H
+#define CONTROLLER_H
 
 #include "Client.h"
+#include "CommonDefinitions.h"
 
 #include <QObject>
 
-class Contoller : public QObject
+Q_ENUMS(HashAlgorithms)
+
+class Controller : public QObject
 {
     Q_OBJECT
 
@@ -14,7 +17,7 @@ class Contoller : public QObject
     Q_PROPERTY(QString hashString READ hashString WRITE setHashString NOTIFY hashStringChanged)
 
 public:
-    Contoller();
+    Controller();
 
     int algorithmType() const;
     QString originalText() const;
@@ -27,7 +30,8 @@ public:
     void hashUpdateCallback(const std::string& hash);
     void historyUpdateCallback(const HistoryMap& history);
 
-    Q_INVOKABLE void doHash(HashAlgorithm_t type, QString text);
+    Q_INVOKABLE void doHash(int type, QString text);
+    Q_INVOKABLE void getHistory();
 
 signals:
     void algorithmTypeChanged();
@@ -42,4 +46,4 @@ private:
     Client mClientWrapper;
 };
 
-#endif // CONTOLLER_H
+#endif // CONTROLLER_H

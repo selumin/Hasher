@@ -5,7 +5,10 @@
 #include "CommonDefinitions.h"
 
 #include <atomic>
+#include <memory>
 #include <map>
+
+#include <QObject>
 #include <QTcpSocket>
 #include <QTcpServer>
 
@@ -15,13 +18,11 @@ class QtSocketIpcServer : public QObject, public IIPCServer {
     DISABLE_COPY(QtSocketIpcServer);
 
 public:
-    QtSocketIpcServer(onDataReceived cb, QObject *parent = nullptr);
+    QtSocketIpcServer(HandleRequestCallback cb, QObject *parent = nullptr);
     virtual ~QtSocketIpcServer();
 
     virtual bool registerService(ServiceDescriptor service) override;
-    virtual bool unregisterService() override;
-
-    virtual int writeToClient(ClientId_t clientId, const ByteArray buffer) override;
+    virtual void unregisterService() override;
 
 private slots:
     void handleNewClientConnection();
@@ -43,13 +44,13 @@ class QtSocketIpcClient : public QObject, public IIPCClient {
     DISABLE_COPY(QtSocketIpcClient);
 
 public:
-    QtSocketIpcClient(onDataReceived cb, QObject *parent = nullptr);
+    QtSocketIpcClient(HandleResponseCallback cb, QObject *parent = nullptr);
     virtual ~QtSocketIpcClient();
 
     virtual bool connectToService(ServiceDescriptor service) override;
     virtual bool disconnectFromService() override;
 
-    virtual int writeToServer(const ByteArray buffer) override;
+    virtual int writeToServer(const ByteArray& buffer) override;
 
 private:
     std::unique_ptr<QTcpSocket> mSocket;

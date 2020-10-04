@@ -1,5 +1,7 @@
 #include "Messages.h"
 
+#include <cstring>
+
 BaseMessage::BaseMessage(MessageType_t type) : mMessageType(type) {}
 
 MessageType_t BaseMessage::getMessageType() const
@@ -40,10 +42,8 @@ ByteArray HashRequest::serialize() const
     const uint16_t size = mTextString.length();
     bytes.push_back(static_cast<uint8_t>(size));
     bytes.push_back(static_cast<uint8_t>(size >> 8));
-
-    bytes.resize(mTextString.length() + 4);
     bytes.push_back(mAlgorithm);
-    memcpy(bytes.data() + 4 + 1, mTextString.c_str(), mTextString.length());
+    bytes.insert(bytes.end(), mTextString.begin(), mTextString.end());
 
     return bytes;
 }
@@ -71,7 +71,7 @@ ByteArray HashResponse::serialize() const
     bytes.push_back(static_cast<uint8_t>(size));
     bytes.push_back(static_cast<uint8_t>(size >> 8));
 
-    memcpy(bytes.data() + 4, mHashString.c_str(), mHashString.length());
+    bytes.insert(bytes.end(), mHashString.begin(), mHashString.end());
 
     return bytes;
 }

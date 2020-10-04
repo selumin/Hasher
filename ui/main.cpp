@@ -2,7 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 
-#include "Contoller.h"
+#include "Controller.h"
 
 int main(int argc, char *argv[])
 {
@@ -17,10 +17,11 @@ int main(int argc, char *argv[])
         if (!obj && url == objUrl)
             QCoreApplication::exit(-1);
     }, Qt::QueuedConnection);
-    engine.load(url);
 
-    Contoller ctrl;
+    Controller ctrl;
     engine.rootContext()->setContextProperty("controller", &ctrl);
+
+    engine.load(url);
 
     return app.exec();
 }
