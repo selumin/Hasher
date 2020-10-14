@@ -22,6 +22,8 @@ StaticLibrary {
         "QtSocketIPC.h",
         "Serializer.cpp",
         "Serializer.h",
+        "Utils.cpp",
+        "Utils.h",
     ]
 
     Export {

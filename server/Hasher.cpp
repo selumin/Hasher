@@ -2,35 +2,34 @@
 
 #include <QCryptographicHash>
 
-
-std::string Hasher::hashMd5(const std::string &text)
+ByteArray Hasher::hashMd5(const std::string &text)
 {
-    return QCryptographicHash::hash(
+    const auto hash = QCryptographicHash::hash(
                 QByteArray(text.c_str(), text.length()),
-                QCryptographicHash::Md5)
-            .toStdString();
+                QCryptographicHash::Md5);
+    return ByteArray(hash.begin(), hash.end());
 }
 
-std::string Hasher::hashSha256(const std::string &text)
+ByteArray Hasher::hashSha256(const std::string &text)
 {
-    return QCryptographicHash::hash(
+    const auto hash = QCryptographicHash::hash(
                 QByteArray(text.c_str(), text.length()),
-                QCryptographicHash::Sha256)
-            .toStdString();
+                QCryptographicHash::Sha256);
+    return ByteArray(hash.begin(), hash.end());
 }
 
-std::string Hasher::hashSha384(const std::string &text)
+ByteArray Hasher::hashSha384(const std::string &text)
 {
-    return QCryptographicHash::hash(
+    const auto hash =  QCryptographicHash::hash(
                 QByteArray(text.c_str(), text.length()),
-                QCryptographicHash::Sha384)
-            .toStdString();
+                QCryptographicHash::Sha384);
+    return ByteArray(hash.begin(), hash.end());
 }
 
-std::string Hasher::hashSha512(const std::string &text)
+ByteArray Hasher::hashSha512(const std::string &text)
 {
-    return QCryptographicHash::hash(
+    const auto hash =  QCryptographicHash::hash(
                 QByteArray(text.c_str(), text.length()),
-                QCryptographicHash::Sha512)
-            .toStdString();
+                QCryptographicHash::Sha512);
+    return ByteArray(hash.begin(), hash.end());
 }

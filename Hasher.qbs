@@ -18,13 +18,6 @@ Project {
     }
 
     SubProject {
-        filePath: "client/client_application.qbs";
-        Properties {
-        name: "Hasher CLI Client Application"
-        }
-    }
-
-    SubProject {
         filePath: "server/server_application.qbs";
         Properties {
             name: "Hasher Server Application"

@@ -3,6 +3,7 @@
 #include "IPCFactory.h"
 #include "Serializer.h"
 #include "Hasher.h"
+#include "Utils.h"
 
 #define LOG_TAG "SERVER"
 #include "Logger.h"
@@ -74,9 +75,9 @@ BaseResponse* Server::process(ClientId_t id, BaseRequestPtr req)
             HashRequest *r = static_cast<HashRequest*>(req.get());
             if (r) {
                 const auto hash = generateHash(r->getAlgorithm(), r->getText());
-                mHistory[id].insert(std::make_pair(r->getText(), hash));
+                mHistory[id].push_back(std::make_pair(r->getText(), hash));
 
-                return new HashResponse(hash);;
+                return new HashResponse(hash);
             }
 ;
             return nullptr;
@@ -84,6 +85,11 @@ BaseResponse* Server::process(ClientId_t id, BaseRequestPtr req)
 
         case GET_HISTORY: {
             const auto currentClientHistory = mHistory[id];
+            LOG_INFO << "History | Start" << std::endl;
+            for (const auto &pair : currentClientHistory) {
+                LOG_INFO << "String=" << pair.first << " ||| Hash= " << hexArrayToString(pair.second) << std::endl;
+            }
+            LOG_INFO << "History | End" << std::endl;
             return new GetHistoryResponse(currentClientHistory);
         }
         case CLEAR_HISTORY: {
@@ -95,7 +101,7 @@ BaseResponse* Server::process(ClientId_t id, BaseRequestPtr req)
     return nullptr;
 }
 
-std::string Server::generateHash(HashAlgorithm_t type, const std::string &text)
+ByteArray Server::generateHash(HashAlgorithm_t type, const std::string &text)
 {
     LOG_INFO << "Hashing string=" << text << " | with alg=" << type << std::endl;
 
@@ -106,5 +112,5 @@ std::string Server::generateHash(HashAlgorithm_t type, const std::string &text)
         case SHA512:    return Hasher::hashSha512(text);
     }
 
-    return std::string();
+    return ByteArray();
 }

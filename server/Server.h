@@ -19,7 +19,7 @@ public:
 private:
     const ByteArray handleNewRequest(ClientId_t clientId, const ByteArray &bytes);
     BaseResponse* process(ClientId_t id, BaseRequestPtr req);
-    std::string generateHash(HashAlgorithm_t type, const std::string &text);
+    ByteArray generateHash(HashAlgorithm_t type, const std::string &text);
 
     std::unique_ptr<IIPCServer> mIpcServer;
     ClientsHistoryMap mHistory;

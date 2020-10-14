@@ -58,7 +58,7 @@ const std::string HashRequest::getText() const
     return mTextString;
 }
 
-HashResponse::HashResponse(const std::string &hash) : BaseResponse(HASH),
+HashResponse::HashResponse(const ByteArray& hash) : BaseResponse(HASH),
     mHashString(hash) {}
 
 ByteArray HashResponse::serialize() const
@@ -67,7 +67,7 @@ ByteArray HashResponse::serialize() const
     bytes.push_back(RESPONSE);
     bytes.push_back(HASH);
 
-    const uint16_t size = mHashString.length();
+    const uint16_t size = mHashString.size();
     bytes.push_back(static_cast<uint8_t>(size));
     bytes.push_back(static_cast<uint8_t>(size >> 8));
 
@@ -76,7 +76,7 @@ ByteArray HashResponse::serialize() const
     return bytes;
 }
 
-const std::string HashResponse::getHash() const
+const ByteArray HashResponse::getHash() const
 {
     return mHashString;
 }
@@ -94,6 +94,8 @@ ByteArray ClearHistoryResponse::serialize() const
     ByteArray bytes;
     bytes.push_back(RESPONSE);
     bytes.push_back(CLEAR_HISTORY);
+    bytes.push_back(0x00);
+    bytes.push_back(0x00);
     bytes.push_back(static_cast<uint8_t>(mDoneSuccesfully));
 
     return bytes;
@@ -109,8 +111,8 @@ ByteArray GetHistoryResponse::serialize() const
     bytes.push_back(RESPONSE);
     bytes.push_back(GET_HISTORY);
 
-    bytes.push_back(0);
-    bytes.push_back(0);
+    bytes.push_back(0x00);
+    bytes.push_back(0x00);
 
     const auto pairsCount = mHistoryMap.size();
     bytes.push_back(pairsCount);
@@ -118,7 +120,7 @@ ByteArray GetHistoryResponse::serialize() const
     for (const auto &pair : mHistoryMap) {
         const auto keySize = pair.first.size();
         bytes.push_back(keySize);
-        bytes.insert(bytes.end(), pair.first.begin(), pair.second.end());
+        bytes.insert(bytes.end(), pair.first.begin(), pair.first.end());
 
         const auto valueSize = pair.second.size();
         bytes.push_back(valueSize);
@@ -140,6 +142,8 @@ ByteArray ClearHistoryRequest::serialize() const
     ByteArray bytes;
     bytes.push_back(REQUEST);
     bytes.push_back(CLEAR_HISTORY);
+    bytes.push_back(0x00);
+    bytes.push_back(0x00);
 
     return bytes;
 }
@@ -151,6 +155,8 @@ ByteArray GetHistoryRequest::serialize() const
     ByteArray bytes;
     bytes.push_back(REQUEST);
     bytes.push_back(GET_HISTORY);
+    bytes.push_back(0x00);
+    bytes.push_back(0x00);
 
     return bytes;
 }

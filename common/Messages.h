@@ -96,15 +96,15 @@ public:
 
 class HashResponse : public BaseResponse {
 public:
-    HashResponse(const std::string& hash);
+    HashResponse(const ByteArray& hash);
     ~HashResponse() = default;
 
     virtual ByteArray serialize() const override;
 
-    const std::string getHash() const;
+    const ByteArray getHash() const;
 
 private:
-    std::string mHashString;
+    ByteArray mHashString;
 };
 
 class GetHistoryResponse : public BaseResponse {

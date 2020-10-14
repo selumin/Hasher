@@ -2,6 +2,7 @@
 #define COMMONDEFINITIONS_H
 
 #include <inttypes.h>
+#include <list>
 #include <map>
 #include <string>
 #include <vector>
@@ -24,8 +25,8 @@ typedef enum IPCTypes {
 
 typedef uint64_t ClientId_t;
 
-typedef std::map<std::string, std::string> HistoryMap;
-typedef std::map<ClientId_t, HistoryMap> ClientsHistoryMap;
 typedef std::vector<char> ByteArray;
+typedef std::list<std::pair<std::string, ByteArray> > HistoryMap;
+typedef std::map<ClientId_t, HistoryMap> ClientsHistoryMap;
 
 #endif // COMMONDEFINITIONS_H

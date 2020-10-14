@@ -3,6 +3,8 @@
 #define LOG_TAG "Serializer"
 #include "Logger.h"
 
+#include "Utils.h"
+
 #include <sstream>
 
 /*  Header - total 3 bytes:
@@ -49,13 +51,10 @@ BaseMessage* Serializer::deserialize(const ByteArray &bytes)
                 HashAlgorithm_t alg = static_cast<HashAlgorithm_t>( bytes.at(sHeaderSize) );
                 return new HashRequest(
                             alg,
-                            std::string((bytes.data() + sHeaderSize + 1), totaPayloadSize - 1));
+                            std::string((bytes.data() + sHeaderSize + 1), totaPayloadSize));
             } else {
-                std::ostringstream s;
-                for (int i = sHeaderSize; i < static_cast<int>(bytes.size()); ++i) {
-                    s << std::hex << static_cast<int>(bytes[i]);
-                }
-                return new HashResponse(s.str());
+                const ByteArray payload(bytes.begin() + sHeaderSize, bytes.end());
+                return new HashResponse(ByteArray(bytes.begin() + sHeaderSize, bytes.end()));
             }
 
             break;
@@ -65,23 +64,28 @@ BaseMessage* Serializer::deserialize(const ByteArray &bytes)
             if (isRequest) {
                 return new GetHistoryRequest();
             } else {
-                HistoryMap map;
+                HistoryMap history;
 
                 const auto payloadStart = sHeaderSize;
-                int currPos = payloadStart + 1;
+                int currPos = payloadStart;
 
-                while (currPos <= totaPayloadSize) {
-                    const auto keySize = bytes.at(currPos++);
-                    const std::string key(bytes.data() + currPos + keySize);
+                const auto pairsCount = bytes[currPos++];
+                int currentPairNumber = 0;
+
+                while (currentPairNumber < pairsCount) {
+                    const uint16_t keySize = bytes.at(currPos++);
+                    const std::string key(bytes.data() + currPos, keySize);
                     currPos += keySize;
-                    const auto valueSize = bytes.at(currPos++);
-                    const std::string value(bytes.data() + currPos + valueSize);
+                    const uint16_t valueSize = bytes.at(currPos++);
+                    const ByteArray value(bytes.data() + currPos + keySize, bytes.data() + currPos + keySize + valueSize);
                     currPos += valueSize;
 
-                    map[key] = value;
+                    ++currentPairNumber;
+
+                    history.push_back(std::make_pair(key, value));
                 }
 
-                return new GetHistoryResponse(map);
+                return new GetHistoryResponse(history);
             }
             break;
         }

@@ -2,6 +2,8 @@
 #include "IPCInterface.h"
 #include "IPCFactory.h"
 #include "Serializer.h"
+#include "Utils.h"
+
 
 #define LOG_TAG "Client"
 #include "Logger.h"
@@ -109,8 +111,8 @@ void Client::handleResponse(BaseResponsePtr response)
             case HASH: {
                 const auto hashResponse = std::dynamic_pointer_cast<HashResponse>(response);
                 if (hashResponse) {
-                    if (mHashCallback) mHashCallback(hashResponse->getHash());
-                    LOG_INFO << "Hash | Data=" << hashResponse->getHash() << std::endl;
+                    if (mHashCallback) mHashCallback( hexArrayToString(hashResponse->getHash()) );
+                    LOG_INFO << "Hash | Data=" << hexArrayToString(hashResponse->getHash()) << std::endl;
                 }
                 break;
             }
@@ -120,7 +122,7 @@ void Client::handleResponse(BaseResponsePtr response)
                     if (mHistoryCallback) mHistoryCallback(historyResponse->getHistory());
                     LOG_INFO << "History | Start" << std::endl;
                     for (const auto &pair : historyResponse->getHistory()) {
-                        LOG_INFO << "String =" << pair.first << " ||| Hash = " << pair.second << std::endl;
+                        LOG_INFO << "String =" << pair.first << " ||| Hash = " << hexArrayToString(pair.second) << std::endl;
                     }
                     LOG_INFO << "History | End" << std::endl;
                 }

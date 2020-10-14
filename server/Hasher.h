@@ -12,10 +12,10 @@ class Hasher
     ~Hasher() = delete;
 
 public:
-    static std::string hashMd5(const std::string &text);
-    static std::string hashSha256(const std::string &text);
-    static std::string hashSha384(const std::string &text);
-    static std::string hashSha512(const std::string &text);
+    static ByteArray hashMd5(const std::string &text);
+    static ByteArray hashSha256(const std::string &text);
+    static ByteArray hashSha384(const std::string &text);
+    static ByteArray hashSha512(const std::string &text);
 };
 
 #endif // HASHER_H
